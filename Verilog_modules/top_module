@@ -1,0 +1,49 @@
+(* X_CORE_INFO = "top_module,Vivado 2020.1" *)
+(* CHECK_LICENSE_TYPE = "vio1_top_module_0_0,top_module,{}" *)
+(* CORE_GENERATION_INFO = "vio1_top_module_0_0,top_module,{x_ipProduct=Vivado 2020.1,x_ipVendor=xilinx.com,x_ipLibrary=module_ref,x_ipName=top_module,x_ipVersion=1.0,x_ipCoreRevision=1,x_ipLanguage=VERILOG,x_ipSimLanguage=MIXED}" *)
+(* IP_DEFINITION_SOURCE = "module_ref" *)
+(* DowngradeIPIdentifiedWarnings = "yes" *)
+module vio1_top_module_0_0 (
+  clk,
+  reset,
+  start,
+  ram_load_btn,
+  store_en,
+  in_addr,
+  in_data,
+  display_out,
+  halted,
+  an,
+  seg
+);
+
+(* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME clk, ASSOCIATED_RESET reset, FREQ_HZ 100000000, FREQ_TOLERANCE_HZ 0, PHASE 0.000, CLK_DOMAIN vio1_clk, INSERT_VIP 0" *)
+(* X_INTERFACE_INFO = "xilinx.com:signal:clock:1.0 clk CLK" *)
+input wire clk;
+(* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME reset, POLARITY ACTIVE_LOW, INSERT_VIP 0" *)
+(* X_INTERFACE_INFO = "xilinx.com:signal:reset:1.0 reset RST" *)
+input wire reset;
+input wire start;
+input wire ram_load_btn;
+input wire store_en;
+input wire [3 : 0] in_addr;
+input wire [7 : 0] in_data;
+output wire [7 : 0] display_out;
+output wire halted;
+output wire [3 : 0] an;
+output wire [6 : 0] seg;
+
+  top_module inst (
+    .clk(clk),
+    .reset(reset),
+    .start(start),
+    .ram_load_btn(ram_load_btn),
+    .store_en(store_en),
+    .in_addr(in_addr),
+    .in_data(in_data),
+    .display_out(display_out),
+    .halted(halted),
+    .an(an),
+    .seg(seg)
+  );
+endmodule
