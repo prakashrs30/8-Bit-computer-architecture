@@ -1,0 +1,160 @@
+module cpu (
+    input clk,
+    input reset,
+    input start,
+    input [7:0] mem_data_in,
+    input [7:0] ext_data,
+    input ext_out_en,
+    output [7:0] mem_data_out,
+    output [3:0] mem_addr,
+    output mem_write,
+    output mem_read,
+    output [7:0] display_out,
+    output halted
+);
+    wire [7:0] bus_wire;
+    wire [19:0] ctrl;
+    wire [12:0] sig;
+    wire [3:0] opcode;
+    wire [3:0] pc_count;
+    wire [7:0] pc_bus;
+    wire [7:0] ir_bus;
+    wire [7:0] a_bus;
+    wire [7:0] alu_bus;
+    wire [7:0] a_val;
+    wire [7:0] b_val;
+    wire alu_carry, alu_zero;
+    wire flag_carry, flag_zero;
+
+    wire CO  = ctrl[0];
+    wire CL  = ctrl[1];
+    wire CE  = ctrl[2];
+    wire OI  = ctrl[3];
+    wire BI  = ctrl[4];
+    wire SUB = ctrl[5];
+    wire ALO = ctrl[6];
+    wire AO  = ctrl[7];
+    wire AI  = ctrl[8];
+    wire IO  = ctrl[9];
+    wire II  = ctrl[10];
+    wire RO  = ctrl[11];
+    wire RI  = ctrl[12];
+    wire MI  = ctrl[13];
+    wire HLT = ctrl[14];
+    wire FE  = ctrl[15];
+    wire XRA = ctrl[16];
+    wire ANA = ctrl[17];
+    wire ORA = ctrl[18];
+
+    assign mem_data_out = bus_wire;
+    assign mem_write    = RI;
+    assign mem_read     = RO;
+    assign halted       = HLT;
+
+    ctrl_unit u_ctrl (
+        .start(start),
+        .clk(clk),
+        .reset(reset),
+        .inp_loaded(1'b0),
+        .opcode(opcode),
+        .carry_flag(flag_carry),
+        .zero_flag(flag_zero),
+        .inp_req(),
+        .out(ctrl),
+        .signal(sig)
+    );
+
+    program_counter u_pc (
+        .clk(clk),
+        .reset(reset),
+        .counter_enable(CE),
+        .counter_load(CL),
+        .counter_out_enable(CO),
+        .data_in(bus_wire[3:0]),
+        .bus_out(pc_bus),
+        .count_out(pc_count)
+    );
+
+    mar u_mar (
+        .clk(clk),
+        .reset(reset),
+        .mar_in(MI),
+        .bus_in(bus_wire[3:0]),
+        .address_out(mem_addr)
+    );
+
+    instruction_register u_ir (
+        .clk(clk),
+        .reset(reset),
+        .ir_in(II),
+        .ir_out(IO),
+        .bus_in(bus_wire),
+        .opcode(opcode),
+        .bus_out(ir_bus)
+    );
+
+    register_a u_reg_a (
+        .clk(clk),
+        .reset(reset),
+        .a_in(AI),
+        .a_out(AO),
+        .bus_in(bus_wire),
+        .a_val(a_val),
+        .bus_out(a_bus)
+    );
+
+    register_b u_reg_b (
+        .clk(clk),
+        .reset(reset),
+        .b_in(BI),
+        .bus_in(bus_wire),
+        .b_val(b_val)
+    );
+
+    alu u_alu (
+        .A_in(a_val),
+        .B_in(b_val),
+        .alu_out_en(ALO),
+        .sub_en(SUB),
+        .xor_en(XRA),
+        .and_en(ANA),
+        .or_en(ORA),
+        .bus_out(alu_bus),
+        .carry_out(alu_carry),
+        .zero_out(alu_zero)
+    );
+
+    flag_register u_flags (
+        .clk(clk),
+        .reset(reset),
+        .flag_enable(FE),
+        .carry_in(alu_carry),
+        .zero_in(alu_zero),
+        .carry_flag(flag_carry),
+        .zero_flag(flag_zero)
+    );
+
+    output_register u_out (
+        .clk(clk),
+        .reset(reset),
+        .out_enable(OI),
+        .bus_in(bus_wire),
+        .display_out(display_out)
+    );
+
+    bus u_bus (
+        .pc_data(pc_bus),
+        .ram_data(mem_data_in),
+        .ir_data(ir_bus),
+        .a_data(a_bus),
+        .alu_data(alu_bus),
+        .ext_data(ext_data),
+        .pc_out_en(CO),
+        .ram_out_en(RO),
+        .ir_out_en(IO),
+        .a_out_en(AO),
+        .alu_out_en(ALO),
+        .ext_out_en(ext_out_en),
+        .bus_data(bus_wire)
+    );
+endmodule
